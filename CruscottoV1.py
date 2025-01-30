@@ -26,7 +26,51 @@ if pagina != st.session_state["pagina"]:
 
 
 #Funzione per leggere il primo file excel
-def process_excel_to_dataframe(file_path):
+def process_excel_to_dataframe(uploaded_file):
+    """
+    Elabora un singolo file Excel e restituisce un DataFrame consolidato.
+
+    Args:
+        uploaded_file (UploadedFile): File caricato dall'utente.
+
+    Returns:
+        pd.DataFrame: DataFrame con i dati elaborati.
+    """
+    try:
+        # Legge tutti i fogli del file Excel
+        excel_data = pd.read_excel(uploaded_file, sheet_name=None)
+        first_sheet = list(excel_data.keys())[0]  # Recupera il primo foglio
+        metadata = excel_data[first_sheet]
+
+        # Estrai informazioni principali
+        cliente = metadata.iloc[0, 0]  
+        anno = int(float(str(metadata.iloc[0, 1]).replace(",", "").strip()))  
+        sconto_secondo_livello = float(metadata.iloc[0, 2]) if metadata.shape[1] > 2 else 0
+        sconto_primo_livello = float(metadata.iloc[0, 3]) if metadata.shape[1] > 3 else 0
+
+        # Inizializza il DataFrame consolidato
+        consolidated_data = pd.DataFrame()
+
+        # Itera su tutti i fogli eccetto il primo (che è per i metadati)
+        for sheet_name, sheet_data in excel_data.items():
+            if sheet_name == first_sheet:
+                continue
+
+            sheet_data = sheet_data.iloc[:, :5]  # Prendi solo le prime 5 colonne
+            sheet_data['Cliente'] = cliente
+            sheet_data['Anno'] = anno
+            sheet_data['Mese'] = sheet_name
+            sheet_data['Sconto secondo livello'] = sconto_secondo_livello
+            sheet_data['Sconto primo livello'] = sconto_primo_livello
+
+            # Accoda i dati
+            consolidated_data = pd.concat([consolidated_data, sheet_data], ignore_index=True)
+
+        return consolidated_data
+
+    except Exception as e:
+        print(f"Errore durante l'elaborazione del file Excel: {e}")
+        return pd.DataFrame()
     """
     Elabora i file caricati, salvandoli in st.session_state per renderli accessibili alla dashboard.
 
@@ -147,6 +191,12 @@ def process_excel_to_dataframe(file_path):
 
 
 def process_uploaded_files(uploaded_files):
+    """
+    Processa i file caricati dall'utente e li salva in `st.session_state`.
+    
+    Args:
+        uploaded_files (list): Lista di file caricati dall'utente.
+    """
     dataframes = []
     details_dataframe = None
 
@@ -157,24 +207,23 @@ def process_uploaded_files(uploaded_files):
         if filename == "dettagli_referenze.xlsx":
             details_dataframe = process_second_excel_to_dataframe(df)
         else:
-            dataframes.append(process_excel_to_dataframe(df))
+            dataframes.append(process_excel_to_dataframe(uploaded_file))
 
     if dataframes:
         st.session_state['main_dataframe'] = pd.concat(dataframes, ignore_index=True)
     if details_dataframe is not None:
         st.session_state['details_dataframe'] = details_dataframe
 
-    # 🔹 Dopo il caricamento, cambia pagina e aggiorna l'interfaccia
     st.session_state["pagina"] = "Dashboard"
-    st.experimental_rerun()  # 🔥 Forza l'aggiornamento della UI
-
-
+    st.experimental_rerun()
 
 def carica_file():
     """
     Interfaccia di caricamento file con Streamlit.
     """
     st.title("Caricamento File Excel")
+
+    # 🔹 Correzione principale: definire uploaded_files qui
     uploaded_files = st.file_uploader("Carica i file Excel", type=["xlsx"], accept_multiple_files=True, key="file_upload")
 
     if uploaded_files:
