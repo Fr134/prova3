@@ -20,7 +20,8 @@ def process_excel_to_dataframe(file_path):
     """
     try:
         # Legge tutti i fogli del file Excel
-        excel_data = pd.read_excel(file_path, sheet_name=None)  # Mantiene tutte le funzionalità originali
+        excel_data = pd.read_excel(file_path, sheet_name=None) if isinstance(file_path, str) else file_path
+
         
         # Recupera il primo foglio per ottenere informazioni sul cliente e sull'anno
         first_sheet = list(excel_data.keys())[0]
@@ -96,6 +97,23 @@ def process_excel_to_dataframe(file_path):
         return pd.DataFrame()
 
 
+def process_uploaded_files(uploaded_files):
+    dataframes = []
+    details_dataframe = None
+
+    for uploaded_file in uploaded_files:
+        filename = uploaded_file.name.lower()
+        df = pd.read_excel(uploaded_file, sheet_name=None)  # Legge tutti i fogli
+        
+        if filename == "dettagli_referenze.xlsx":
+            details_dataframe = process_second_excel_to_dataframe(df)
+        else:
+            dataframes.append(process_excel_to_dataframe(df))
+
+    return dataframes, details_dataframe
+
+
+
 #legge il secondo file excel
 
 def process_second_excel_to_dataframe(file_path):
@@ -110,7 +128,8 @@ def process_second_excel_to_dataframe(file_path):
     """
     try:
         # Legge il file Excel e seleziona le prime 5 colonne
-        second_data = pd.read_excel(file_path, usecols=range(6))
+        second_data = pd.read_excel(file_path, usecols=range(6)) if isinstance(file_path, str) else file_path[list(file_path.keys())[0]].iloc[:, :6]
+
 
         # Rinomina le colonne per uniformità
         second_data.columns = ['Referente', 'Nome', 'Quantita in grammi', 'Pezzi in un cartone', 'Ricetta', 'Listino']
@@ -640,37 +659,28 @@ def calcolo_KPI(dataframe, sconto, incremento):
 
 
 # MAIN
+st.title("Caricamento File Excel")
 
-# Lista dei file Excel da elaborare
-file_paths = [
-    r"G:\Il mio Drive\Lavoro\Crocchias\File_calcolo\x riccardo\f.lli ibba\f.lli ibba 2024.xlsx",
-    r"G:\Il mio Drive\Lavoro\Crocchias\File_calcolo\x riccardo\Sardegna più\sardegna più 2024.xlsx",
-]
+# Carica più file Excel
+uploaded_files = st.file_uploader("Carica i file Excel", type=["xlsx"], accept_multiple_files=True)
 
-# Inizializza un DataFrame vuoto
-dataframe = pd.DataFrame()
+# Controlla se l'utente ha caricato almeno un file
+if uploaded_files:
+    # Processa i file caricati
+    dataframes, details_dataframe = process_uploaded_files(uploaded_files)
 
-# Itera sui file e concatena i dati nel DataFrame
-for file_path in file_paths:
-    temp_dataframe = process_excel_to_dataframe(file_path)
-    
-    # Controlla che il DataFrame temporaneo non sia vuoto prima di concatenarlo
-    if not temp_dataframe.empty:
-        # Aggiunge solo righe nuove che non sono già presenti nel DataFrame principale
-        dataframe = pd.concat([dataframe, temp_dataframe], ignore_index=True)
+    # Combina i dati dei clienti in un unico DataFrame
+    main_dataframe = pd.concat(dataframes, ignore_index=True)
 
-# Percorso al secondo file Excel
-second_file_path = r"G:\Il mio Drive\Lavoro\Crocchias\File_calcolo\x riccardo\dettagli_referenze.xlsx"
+    # Unisce con i dettagli delle referenze, se presenti
+    if not details_dataframe.empty:
+        main_dataframe = merge_with_second_dataframe(main_dataframe, details_dataframe)
 
-# Processa il secondo file Excel
-second_dataframe = process_second_excel_to_dataframe(second_file_path)
+    # Mostra la dashboard con i dati elaborati
+    show_dashboard(main_dataframe)
+else:
+    st.warning("⚠️ Carica almeno un file per continuare.")
 
-# Unisce il DataFrame principale con i dettagli dal secondo DataFrame
-dataframe = merge_with_second_dataframe(dataframe, second_dataframe)
-
-# Mostra la dashboard con Streamlit
-if __name__ == "__main__":
-    show_dashboard(dataframe)
 
 
 
