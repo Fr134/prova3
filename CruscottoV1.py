@@ -215,7 +215,8 @@ def process_uploaded_files(uploaded_files):
         st.session_state['details_dataframe'] = details_dataframe
 
     st.session_state["pagina"] = "Dashboard"
-    st.experimental_rerun()
+    st.rerun()
+
 
 def carica_file():
     """
