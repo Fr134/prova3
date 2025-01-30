@@ -740,15 +740,17 @@ uploaded_files = st.file_uploader("Carica i file Excel", type=["xlsx"], accept_m
 
 # Controlla se l'utente ha caricato almeno un file
 if uploaded_files:
-    
-    
+    process_uploaded_files(uploaded_files)  # I dati vengono salvati in st.session_state
 
-    # Combina i dati dei clienti in un unico DataFrame
-    main_dataframe = pd.concat(dataframes, ignore_index=True)
+# 🔹 Controlla quale pagina deve essere mostrata
+if st.session_state["pagina"] == "Caricamento File":
+    carica_file()
+elif st.session_state["pagina"] == "Dashboard":
+    if "main_dataframe" in st.session_state and not st.session_state["main_dataframe"].empty:
+        show_dashboard(st.session_state["main_dataframe"])
+    else:
+        st.warning("⚠️ Carica almeno un file per continuare.")
 
-    # Unisce con i dettagli delle referenze, se presenti
-    if not details_dataframe.empty:
-        main_dataframe = merge_with_second_dataframe(main_dataframe, details_dataframe)
 
     if "pagina" not in st.session_state:
         st.session_state["pagina"] = "Caricamento File"
