@@ -751,7 +751,8 @@ if uploaded_files:
         main_dataframe = merge_with_second_dataframe(main_dataframe, details_dataframe)
 
     if "pagina" not in st.session_state:
-    st.session_state["pagina"] = "Caricamento File"
+        st.session_state["pagina"] = "Caricamento File"
+    
 
 
     if st.session_state["pagina"] == "Caricamento File":
