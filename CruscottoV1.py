@@ -5,8 +5,43 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 st.set_page_config(layout="wide")  # Configura il layout per occupare tutta la larghezza della pagina
+
+# Creazione del menu di navigazione nella sidebar
+st.sidebar.title("Navigazione")
+pagina = st.sidebar.selectbox("Seleziona una pagina", ["Caricamento File", "Dashboard"])
+
 #Funzione per leggere il primo file excel
 def process_excel_to_dataframe(file_path):
+    """
+    Elabora i file caricati, salvandoli in st.session_state per renderli accessibili alla dashboard.
+
+    Args:
+        uploaded_files (list): Lista di file caricati dall'utente.
+    """
+    dataframes = []
+    details_dataframe = None
+
+    for uploaded_file in uploaded_files:
+        filename = uploaded_file.name.lower()
+        df = pd.read_excel(uploaded_file, sheet_name=None)  # Legge tutti i fogli
+        
+        if filename == "dettagli_referenze.xlsx":
+            details_dataframe = process_second_excel_to_dataframe(df)
+        else:
+            dataframes.append(process_excel_to_dataframe(df))
+    
+    # Combina tutti i DataFrame in un unico DataFrame
+    if dataframes:
+        main_dataframe = pd.concat(dataframes, ignore_index=True)
+    else:
+        main_dataframe = pd.DataFrame()
+
+    # Memorizza i DataFrame nella sessione di Streamlit
+    st.session_state['main_dataframe'] = main_dataframe
+    st.session_state['details_dataframe'] = details_dataframe
+
+    st.success("File caricati con successo! Ora puoi accedere alla Dashboard.")
+
     """
     Legge un file Excel con dati organizzati su più fogli e restituisce un DataFrame consolidato con informazioni
     sul cliente, anno, mese e le prime 5 colonne dei fogli mensili.
@@ -111,6 +146,16 @@ def process_uploaded_files(uploaded_files):
 
     return dataframes, details_dataframe
 
+def carica_file():
+    """
+    Interfaccia di caricamento file con Streamlit.
+    """
+    st.title("Caricamento File Excel")
+    uploaded_files = st.file_uploader("Carica i file Excel", type=["xlsx"], accept_multiple_files=True)
+
+    if uploaded_files:
+        process_uploaded_files(uploaded_files)
+        st.success("File caricati con successo! Ora puoi accedere alla Dashboard.")
 
 
 #legge il secondo file excel
@@ -373,6 +418,12 @@ def show_dashboard(dataframe):
    
     st.title("Calcolatore Promozioni clienti")
     
+    # Controlla se i dati sono stati caricati
+    if 'main_dataframe' not in st.session_state or st.session_state['main_dataframe'].empty:
+        st.warning("Carica i file prima di accedere alla Dashboard.")
+        return
+    
+    dataframe = st.session_state['main_dataframe']
     
     with st.sidebar:
         st.markdown("### 🔍 Filtro Dati")
@@ -675,8 +726,16 @@ if uploaded_files:
     if not details_dataframe.empty:
         main_dataframe = merge_with_second_dataframe(main_dataframe, details_dataframe)
 
-    # Mostra la dashboard con i dati elaborati
-    show_dashboard(main_dataframe)
+    # Mostra la pagina selezionata dal menu
+    if pagina == "Caricamento File":
+        carica_file()
+    
+    elif pagina == "Dashboard":
+        show_dashboard()
+    
+
+
+
 else:
     st.warning("⚠️ Carica almeno un file per continuare.")
 
