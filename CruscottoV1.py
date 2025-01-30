@@ -175,11 +175,12 @@ def carica_file():
     Interfaccia di caricamento file con Streamlit.
     """
     st.title("Caricamento File Excel")
-    uploaded_files = st.file_uploader("Carica i file Excel", type=["xlsx"], accept_multiple_files=True)
+    uploaded_files = st.file_uploader("Carica i file Excel", type=["xlsx"], accept_multiple_files=True, key="file_upload")
 
     if uploaded_files:
         process_uploaded_files(uploaded_files)
         st.success("File caricati con successo! Ora puoi accedere alla Dashboard.")
+
 
 
 #legge il secondo file excel
@@ -735,8 +736,7 @@ def calcolo_KPI(dataframe, sconto, incremento):
 # MAIN
 st.title("Caricamento File Excel")
 
-# Carica più file Excel
-uploaded_files = st.file_uploader("Carica i file Excel", type=["xlsx"], accept_multiple_files=True)
+
 
 # Controlla se l'utente ha caricato almeno un file
 if uploaded_files:
@@ -750,11 +750,6 @@ elif st.session_state["pagina"] == "Dashboard":
         show_dashboard(st.session_state["main_dataframe"])
     else:
         st.warning("⚠️ Carica almeno un file per continuare.")
-
-
-    if "pagina" not in st.session_state:
-        st.session_state["pagina"] = "Caricamento File"
-    
 
 
     if st.session_state["pagina"] == "Caricamento File":
