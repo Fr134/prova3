@@ -8,9 +8,6 @@ st.set_page_config(layout="wide")  # Configura il layout per occupare tutta la l
 
 st.sidebar.title("Navigazione")
 
-# 🔹 Inizializza `st.session_state["pagina"]` se non esiste
-if "pagina" not in st.session_state:
-    st.session_state["pagina"] = "Caricamento File"
 
 # 🔹 Inizializza `st.session_state["pagina"]` se non esiste
 if "pagina" not in st.session_state:
@@ -169,7 +166,8 @@ def process_uploaded_files(uploaded_files):
 
     # 🔹 Dopo il caricamento, cambia pagina e aggiorna l'interfaccia
     st.session_state["pagina"] = "Dashboard"
-    st.rerun()  # 🔥 Forza l'aggiornamento della UI
+    st.experimental_rerun()  # 🔥 Forza l'aggiornamento della UI
+
 
 
 def carica_file():
@@ -742,8 +740,8 @@ uploaded_files = st.file_uploader("Carica i file Excel", type=["xlsx"], accept_m
 
 # Controlla se l'utente ha caricato almeno un file
 if uploaded_files:
-    # Processa i file caricati
-    dataframes, details_dataframe = process_uploaded_files(uploaded_files)
+    
+    
 
     # Combina i dati dei clienti in un unico DataFrame
     main_dataframe = pd.concat(dataframes, ignore_index=True)
@@ -752,11 +750,29 @@ if uploaded_files:
     if not details_dataframe.empty:
         main_dataframe = merge_with_second_dataframe(main_dataframe, details_dataframe)
 
-    # 🔹 Mostra la pagina corretta dopo il caricamento
+    if "pagina" not in st.session_state:
+    st.session_state["pagina"] = "Caricamento File"
+
+
     if st.session_state["pagina"] == "Caricamento File":
         carica_file()
+    
+
     elif st.session_state["pagina"] == "Dashboard":
-        show_dashboard()
+        if "main_dataframe" in st.session_state and not st.session_state["main_dataframe"].empty:
+            show_dashboard()
+        else:
+            st.warning("⚠️ Carica almeno un file per continuare.")
+        
+
+    
+        
+    
+    
+
+
+   
+
 
     
 
