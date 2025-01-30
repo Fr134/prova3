@@ -4,8 +4,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 import plotly.graph_objects as go
 
-
- st.set_page_config(layout="wide")  # Configura il layout per occupare tutta la larghezza della pagina
+st.set_page_config(layout="wide")  # Configura il layout per occupare tutta la larghezza della pagina
 #Funzione per leggere il primo file excel
 def process_excel_to_dataframe(file_path):
     """
