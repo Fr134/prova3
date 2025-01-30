@@ -5,7 +5,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 
-
+ st.set_page_config(layout="wide")  # Configura il layout per occupare tutta la larghezza della pagina
 #Funzione per leggere il primo file excel
 def process_excel_to_dataframe(file_path):
     """
@@ -371,7 +371,7 @@ def show_dashboard(dataframe):
     Args:
         dataframe (pd.DataFrame): Il DataFrame da visualizzare nella dashboard.
     """
-    st.set_page_config(layout="wide")  # Configura il layout per occupare tutta la larghezza della pagina
+   
     st.title("Calcolatore Promozioni clienti")
     
     
