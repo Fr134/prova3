@@ -6,9 +6,19 @@ import plotly.graph_objects as go
 
 st.set_page_config(layout="wide")  # Configura il layout per occupare tutta la larghezza della pagina
 
-# Creazione del menu di navigazione nella sidebar
 st.sidebar.title("Navigazione")
-pagina = st.sidebar.selectbox("Seleziona una pagina", ["Caricamento File", "Dashboard"])
+
+# 🔹 Inizializza `st.session_state["pagina"]` se non esiste
+if "pagina" not in st.session_state:
+    st.session_state["pagina"] = "Caricamento File"
+
+# 🔹 Usa `st.session_state["pagina"]` come valore iniziale della selectbox
+pagina = st.sidebar.selectbox("Seleziona una pagina", ["Caricamento File", "Dashboard"], index=["Caricamento File", "Dashboard"].index(st.session_state["pagina"]))
+
+# 🔹 Aggiorna `st.session_state["pagina"]` quando l'utente cambia pagina
+st.session_state["pagina"] = pagina
+
+
 
 #Funzione per leggere il primo file excel
 def process_excel_to_dataframe(file_path):
@@ -137,14 +147,22 @@ def process_uploaded_files(uploaded_files):
 
     for uploaded_file in uploaded_files:
         filename = uploaded_file.name.lower()
-        df = pd.read_excel(uploaded_file, sheet_name=None)  # Legge tutti i fogli
-        
+        df = pd.read_excel(uploaded_file, sheet_name=None)
+
         if filename == "dettagli_referenze.xlsx":
             details_dataframe = process_second_excel_to_dataframe(df)
         else:
             dataframes.append(process_excel_to_dataframe(df))
 
-    return dataframes, details_dataframe
+    if dataframes:
+        st.session_state['main_dataframe'] = pd.concat(dataframes, ignore_index=True)
+    if details_dataframe is not None:
+        st.session_state['details_dataframe'] = details_dataframe
+
+    # 🔹 Dopo il caricamento, cambia pagina e aggiorna l'interfaccia
+    st.session_state["pagina"] = "Dashboard"
+    st.rerun()  # 🔥 Forza l'aggiornamento della UI
+
 
 def carica_file():
     """
