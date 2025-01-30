@@ -737,11 +737,6 @@ def calcolo_KPI(dataframe, sconto, incremento):
 st.title("Caricamento File Excel")
 
 
-
-# Controlla se l'utente ha caricato almeno un file
-if uploaded_files:
-    process_uploaded_files(uploaded_files)  # I dati vengono salvati in st.session_state
-
 # 🔹 Controlla quale pagina deve essere mostrata
 if st.session_state["pagina"] == "Caricamento File":
     carica_file()
@@ -751,16 +746,6 @@ elif st.session_state["pagina"] == "Dashboard":
     else:
         st.warning("⚠️ Carica almeno un file per continuare.")
 
-
-    if st.session_state["pagina"] == "Caricamento File":
-        carica_file()
-    
-
-    elif st.session_state["pagina"] == "Dashboard":
-        if "main_dataframe" in st.session_state and not st.session_state["main_dataframe"].empty:
-            show_dashboard()
-        else:
-            st.warning("⚠️ Carica almeno un file per continuare.")
         
 
     
