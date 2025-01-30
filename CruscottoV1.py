@@ -12,11 +12,19 @@ st.sidebar.title("Navigazione")
 if "pagina" not in st.session_state:
     st.session_state["pagina"] = "Caricamento File"
 
-# 🔹 Usa `st.session_state["pagina"]` come valore iniziale della selectbox
-pagina = st.sidebar.selectbox("Seleziona una pagina", ["Caricamento File", "Dashboard"], index=["Caricamento File", "Dashboard"].index(st.session_state["pagina"]))
+# 🔹 Inizializza `st.session_state["pagina"]` se non esiste
+if "pagina" not in st.session_state:
+    st.session_state["pagina"] = "Caricamento File"
 
-# 🔹 Aggiorna `st.session_state["pagina"]` quando l'utente cambia pagina
-st.session_state["pagina"] = pagina
+# 🔹 Usa `st.session_state["pagina"]` come valore iniziale della selectbox
+pagina = st.sidebar.selectbox("Seleziona una pagina", ["Caricamento File", "Dashboard"], 
+                              index=["Caricamento File", "Dashboard"].index(st.session_state["pagina"]))
+
+# 🔹 Solo se l'utente cambia pagina, aggiorna lo stato della sessione
+if pagina != st.session_state["pagina"]:
+    st.session_state["pagina"] = pagina
+    st.rerun()  # 🔥 Forza l'aggiornamento della UI
+
 
 
 
@@ -744,12 +752,14 @@ if uploaded_files:
     if not details_dataframe.empty:
         main_dataframe = merge_with_second_dataframe(main_dataframe, details_dataframe)
 
-    # Mostra la pagina selezionata dal menu
-    if pagina == "Caricamento File":
+    # 🔹 Mostra la pagina corretta dopo il caricamento
+    if st.session_state["pagina"] == "Caricamento File":
         carica_file()
-    
-    elif pagina == "Dashboard":
+    elif st.session_state["pagina"] == "Dashboard":
         show_dashboard()
+
+    
+
     
 
 
