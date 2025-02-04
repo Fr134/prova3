@@ -429,7 +429,7 @@ def show_dashboard(dataframe):
         # Aggiunta del menu a tendina con due opzioni per eliminare le promo del anno precedente 
         st.markdown("### 🔽 elimina promozione A.p.")
         azione_promozione = st.selectbox(
-            "Seleziona un'azione per la promozione:",
+            "",
             options=["No", "Si"]
         )
 
@@ -478,7 +478,7 @@ def show_dashboard(dataframe):
         elif azione_promozione == "Si":
             st.write("##### Dati A.p. senza promozione")
             st.metric("💰 Fatturato A.p. senza promozione", f"€ {fatturato_ap_eliminata_promo:,.0f}")
-            st.metric("📈 Cartoni venduti senza promozione", f" {cartoni_venduti_ap:,.0f}")
+            st.metric("📈 Cartoni venduti senza promozione", f" {cartoni_venduti:,.0f}")
             st.metric("📈 Margine A.p. senza promozione", f"€ {margine_ap_eliminata_promo:,.0f}")
             st.metric("💰 Fatturato con sconto di secondo livello", f"€ {fatturato_ap_eliminata_promo_con_sconto_secondo_liv:,.0f}")
             st.metric("📈 Margine Totale con sconto di secondo livello", f"€ {margine_ap_eliminata_promo_con_sconto_secondo_liv:,.0f}")
